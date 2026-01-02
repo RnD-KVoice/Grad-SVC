@@ -123,7 +123,13 @@ class LSTMSpeakerEncoder(nn.Module):
     # pylint: disable=unused-argument, redefined-builtin
     def load_checkpoint(self, checkpoint_path: str, eval: bool = False, use_cuda: bool = False):
         state = load_fsspec(checkpoint_path, map_location=torch.device("cpu"))
-        self.load_state_dict(state["model"])
+        # Handle different checkpoint formats
+        if "model" in state:
+            self.load_state_dict(state["model"])
+        elif "model_state" in state:
+            self.load_state_dict(state["model_state"])
+        else:
+            self.load_state_dict(state)
         if use_cuda:
             self.cuda()
         if eval:
